@@ -1,0 +1,186 @@
+[
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple flipper contract that holds a value true or false and can be toggled."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod flipper {\n    \n        #[ink(storage)]\n        pub struct Flipper {\n            value: bool,\n        }\n    \n        impl Flipper {\n            #[ink(constructor)]\n            pub fn new(init_value: bool) -> Self {\n                Self { value: init_value }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self::new(Default::default())\n            }\n    \n            #[ink(message)]\n            pub fn flip(&mut self) {\n                self.value = !self.value;\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> bool {\n                self.value\n            }\n        }\n    }\n    "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple contract that stores a value that can be increment."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod incrementer {\n    \n        #[ink(storage)]\n        pub struct Incrementer {\n            value: i32,\n        }\n    \n        impl Incrementer {\n            #[ink(constructor)]\n            pub fn new(init_value: i32) -> Self {\n                Self {\n                    value: init_value,\n                }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self {\n                    value: Default::default(),\n                }\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> i32 {\n                self.value\n            }\n    \n            #[ink(message)]\n            pub fn inc(&mut self, by: i32) {\n                self.value += by;\n            }\n        }\n    \n    }\n    "
+      },
+      {
+        "role": "user",
+        "content": "Add a mapping to the contract that maps addresses to values so that the user can also increment their own value based on their addresses."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod incrementer {\n        use ink::storage::Mapping;\n\n        #[ink(storage)]\n        pub struct Incrementer {\n            value: i32,\n            my_map: Mapping<AccountId, i32>,\n        }\n\n        impl Incrementer {\n            #[ink(constructor)]\n            pub fn new(init_value: i32) -> Self {\n                let mut my_map = Mapping::default();\n                let caller = Self::env().caller();\n                my_map.insert(&caller, &0);\n\n                Self {\n                    value: init_value,\n                    my_map,\n                }\n            }\n\n            #[ink(message)]\n            pub fn get(&self) -> i32 {\n                self.value\n            }\n\n            #[ink(message)]\n            pub fn inc(&mut self, by: i32) {\n                self.value += by;\n            }\n\n            #[ink(message)]\n            pub fn get_mine(&self) -> i32 {\n                let caller = self.env().caller();\n                self.my_map.get(&caller).unwrap_or_default()\n            }\n\n            #[ink(message)]\n            pub fn inc_mine(&mut self, by: i32) {\n                let caller = self.env().caller();\n                let my_value = self.get_mine();\n                self.my_map.insert(caller, &(my_value + by));\n            }\n\n            #[ink(message)]\n            pub fn remove_mine(&self) {\n                let caller = self.env().caller();\n                self.my_map.remove(&caller)\n            }\n        }\n    }\n        "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple greeting contract that stores a greeting string and allows the user to set and get the greeting."
+      },
+      {
+        "role": "assistant",
+        "content": "\n        #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n        #[ink::contract]\n        mod greeter {\n            use ink::prelude::string::String;\n\n            #[ink(event)]\n            pub struct Greeted {\n                from: Option<AccountId>,\n                message: String,\n            }\n\n            #[ink(storage)]\n            pub struct Greeter {\n                message: String,\n            }\n\n            impl Greeter {\n                #[ink(constructor)]\n                pub fn new(init_value: String) -> Self {\n                    Self {\n                        message: init_value,\n                    }\n                }\n\n                #[ink(constructor)]\n                pub fn default() -> Self {\n                    let default_message = String::from(\"Hello ink!\");\n                    Self::new(default_message)\n                }\n\n                #[ink(message)]\n                pub fn greet(&self) -> String {\n                    self.message.clone()\n                }\n\n                #[ink(message)]\n                pub fn set_message(&mut self, new_value: String) {\n                    self.message = new_value.clone();\n\n                    let from = self.env().caller();\n                    self.env().emit_event(Greeted {\n                        from: Some(from),\n                        message: new_value,\n                    });\n                }\n            }\n        }\n        "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple boolean contract that holds a value true or false and can be toggled."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod flipper {\n    \n        #[ink(storage)]\n        pub struct Flipper {\n            value: bool,\n        }\n    \n        impl Flipper {\n            #[ink(constructor)]\n            pub fn new(init_value: bool) -> Self {\n                Self { value: init_value }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self::new(Default::default())\n            }\n    \n            #[ink(message)]\n            pub fn flip(&mut self) {\n                self.value = !self.value;\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> bool {\n                self.value\n            }\n        }\n    }\n    "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple contract that stores a value that can be added."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod incrementer {\n    \n        #[ink(storage)]\n        pub struct Incrementer {\n            value: i32,\n        }\n    \n        impl Incrementer {\n            #[ink(constructor)]\n            pub fn new(init_value: i32) -> Self {\n                Self {\n                    value: init_value,\n                }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self {\n                    value: Default::default(),\n                }\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> i32 {\n                self.value\n            }\n    \n            #[ink(message)]\n            pub fn inc(&mut self, by: i32) {\n                self.value += by;\n            }\n        }\n    \n    }\n    "
+      },
+      {
+        "role": "user",
+        "content": "Add a mapping to the contract that maps addresses to values so that the user can also increment their own value based on their addresses."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod incrementer {\n        use ink::storage::Mapping;\n\n        #[ink(storage)]\n        pub struct Incrementer {\n            value: i32,\n            my_map: Mapping<AccountId, i32>,\n        }\n\n        impl Incrementer {\n            #[ink(constructor)]\n            pub fn new(init_value: i32) -> Self {\n                let mut my_map = Mapping::default();\n                let caller = Self::env().caller();\n                my_map.insert(&caller, &0);\n\n                Self {\n                    value: init_value,\n                    my_map,\n                }\n            }\n\n            #[ink(message)]\n            pub fn get(&self) -> i32 {\n                self.value\n            }\n\n            #[ink(message)]\n            pub fn inc(&mut self, by: i32) {\n                self.value += by;\n            }\n\n            #[ink(message)]\n            pub fn get_mine(&self) -> i32 {\n                let caller = self.env().caller();\n                self.my_map.get(&caller).unwrap_or_default()\n            }\n\n            #[ink(message)]\n            pub fn inc_mine(&mut self, by: i32) {\n                let caller = self.env().caller();\n                let my_value = self.get_mine();\n                self.my_map.insert(caller, &(my_value + by));\n            }\n\n            #[ink(message)]\n            pub fn remove_mine(&self) {\n                let caller = self.env().caller();\n                self.my_map.remove(&caller)\n            }\n        }\n    }\n        "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple hello world that stores a greeting string and allows the user to set and get the greeting."
+      },
+      {
+        "role": "assistant",
+        "content": "\n        #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n        #[ink::contract]\n        mod greeter {\n            use ink::prelude::string::String;\n\n            #[ink(event)]\n            pub struct Greeted {\n                from: Option<AccountId>,\n                message: String,\n            }\n\n            #[ink(storage)]\n            pub struct Greeter {\n                message: String,\n            }\n\n            impl Greeter {\n                #[ink(constructor)]\n                pub fn new(init_value: String) -> Self {\n                    Self {\n                        message: init_value,\n                    }\n                }\n\n                #[ink(constructor)]\n                pub fn default() -> Self {\n                    let default_message = String::from(\"Hello ink!\");\n                    Self::new(default_message)\n                }\n\n                #[ink(message)]\n                pub fn greet(&self) -> String {\n                    self.message.clone()\n                }\n\n                #[ink(message)]\n                pub fn set_message(&mut self, new_value: String) {\n                    self.message = new_value.clone();\n\n                    let from = self.env().caller();\n                    self.env().emit_event(Greeted {\n                        from: Some(from),\n                        message: new_value,\n                    });\n                }\n            }\n        }\n        "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple flipper contract that holds a booleanand can be toggled."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod flipper {\n    \n        #[ink(storage)]\n        pub struct Flipper {\n            value: bool,\n        }\n    \n        impl Flipper {\n            #[ink(constructor)]\n            pub fn new(init_value: bool) -> Self {\n                Self { value: init_value }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self::new(Default::default())\n            }\n    \n            #[ink(message)]\n            pub fn flip(&mut self) {\n                self.value = !self.value;\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> bool {\n                self.value\n            }\n        }\n    }\n    "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple contract that has a number that can be increment."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod incrementer {\n    \n        #[ink(storage)]\n        pub struct Incrementer {\n            value: i32,\n        }\n    \n        impl Incrementer {\n            #[ink(constructor)]\n            pub fn new(init_value: i32) -> Self {\n                Self {\n                    value: init_value,\n                }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self {\n                    value: Default::default(),\n                }\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> i32 {\n                self.value\n            }\n    \n            #[ink(message)]\n            pub fn inc(&mut self, by: i32) {\n                self.value += by;\n            }\n        }\n    \n    }\n    "
+      },
+      {
+        "role": "user",
+        "content": "Add a mapping to the contract that maps addresses to values so that the user can also increment their own value based on their addresses."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod incrementer {\n        use ink::storage::Mapping;\n\n        #[ink(storage)]\n        pub struct Incrementer {\n            value: i32,\n            my_map: Mapping<AccountId, i32>,\n        }\n\n        impl Incrementer {\n            #[ink(constructor)]\n            pub fn new(init_value: i32) -> Self {\n                let mut my_map = Mapping::default();\n                let caller = Self::env().caller();\n                my_map.insert(&caller, &0);\n\n                Self {\n                    value: init_value,\n                    my_map,\n                }\n            }\n\n            #[ink(message)]\n            pub fn get(&self) -> i32 {\n                self.value\n            }\n\n            #[ink(message)]\n            pub fn inc(&mut self, by: i32) {\n                self.value += by;\n            }\n\n            #[ink(message)]\n            pub fn get_mine(&self) -> i32 {\n                let caller = self.env().caller();\n                self.my_map.get(&caller).unwrap_or_default()\n            }\n\n            #[ink(message)]\n            pub fn inc_mine(&mut self, by: i32) {\n                let caller = self.env().caller();\n                let my_value = self.get_mine();\n                self.my_map.insert(caller, &(my_value + by));\n            }\n\n            #[ink(message)]\n            pub fn remove_mine(&self) {\n                let caller = self.env().caller();\n                self.my_map.remove(&caller)\n            }\n        }\n    }\n        "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple greeting contract that has a greeting string and allows people to set and get the greeting."
+      },
+      {
+        "role": "assistant",
+        "content": "\n        #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n        #[ink::contract]\n        mod greeter {\n            use ink::prelude::string::String;\n\n            #[ink(event)]\n            pub struct Greeted {\n                from: Option<AccountId>,\n                message: String,\n            }\n\n            #[ink(storage)]\n            pub struct Greeter {\n                message: String,\n            }\n\n            impl Greeter {\n                #[ink(constructor)]\n                pub fn new(init_value: String) -> Self {\n                    Self {\n                        message: init_value,\n                    }\n                }\n\n                #[ink(constructor)]\n                pub fn default() -> Self {\n                    let default_message = String::from(\"Hello ink!\");\n                    Self::new(default_message)\n                }\n\n                #[ink(message)]\n                pub fn greet(&self) -> String {\n                    self.message.clone()\n                }\n\n                #[ink(message)]\n                pub fn set_message(&mut self, new_value: String) {\n                    self.message = new_value.clone();\n\n                    let from = self.env().caller();\n                    self.env().emit_event(Greeted {\n                        from: Some(from),\n                        message: new_value,\n                    });\n                }\n            }\n        }\n        "
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an assistant that generates Rust Ink smart contract code for the Aelph Zero blockchain based on the user's request."
+      },
+      {
+        "role": "user",
+        "content": "Generate a simple flipper contract that holds a value and can be toggled true or false."
+      },
+      {
+        "role": "assistant",
+        "content": "\n    #![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n    #[ink::contract]\n    mod flipper {\n    \n        #[ink(storage)]\n        pub struct Flipper {\n            value: bool,\n        }\n    \n        impl Flipper {\n            #[ink(constructor)]\n            pub fn new(init_value: bool) -> Self {\n                Self { value: init_value }\n            }\n    \n            #[ink(constructor)]\n            pub fn default() -> Self {\n                Self::new(Default::default())\n            }\n    \n            #[ink(message)]\n            pub fn flip(&mut self) {\n                self.value = !self.value;\n            }\n    \n            #[ink(message)]\n            pub fn get(&self) -> bool {\n                self.value\n            }\n        }\n    }\n    "
+      }
+    ]
+  }
+]
