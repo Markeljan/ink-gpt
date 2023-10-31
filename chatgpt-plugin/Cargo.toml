@@ -1,0 +1,12 @@
+[package]
+name = "chatgpt-plugin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocket = { version = "0.5.0-rc.3", features = ["json"] }
+rocket_cors = "0.6.0-alpha2"
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+dotenv = "0.15.0"

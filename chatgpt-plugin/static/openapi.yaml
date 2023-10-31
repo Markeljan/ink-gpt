@@ -1,0 +1,44 @@
+openapi: 3.0.1
+info:
+  title: Ink GPT
+  description: Write and deploy Ink smart contracts.
+  version: v0
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /compile:
+    post:
+      operationId: compileContract
+      summary: Compile an Ink smart contract
+      description: Compile an Rust smart contract designed for Aleph Zero. Provide the source code as a string.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - source
+              properties:
+                source:
+                  type: string
+                  description: Rust source code of the smart contract.
+      responses:
+        '200':
+          description: Contract compiled successfully or an error message if compilation failed.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /deploy:
+    get:
+      operationId: deployContract
+      summary: Deploy a smart contract to Aleph Zero Testnet
+      description: Deploy the most recent smart contract to Aleph Zero that has been compiled.
+      responses:
+        '200':
+          description: Contract deployed successfully or an error message if deployment failed.
+          content:
+            text/plain:
+              schema:
+                type: string
